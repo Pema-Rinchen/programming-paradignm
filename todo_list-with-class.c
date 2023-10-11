@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -17,39 +18,22 @@ struct Todo {
 
 class AddTask : public Task {
 public:
-    AddTask(int& id, Todo*& todos, int& size) : ID(id), todos(todos), arraySize(size) {}
+    AddTask(int& id, vector<Todo>& todos) : ID(id), todos(todos) {}
 
     void perform() override {
         system("cls");
-        cout << "\t*******************************************************************" << endl;
-        cout << "\t*                      To Do List Application                     *" << endl;
-        cout << "\t*******************************************************************" << endl << endl << endl << endl;
-
         Todo todo;
         cout << "\n\tEnter new task: ";
-        cin.get();
+        cin.ignore();
         getline(cin, todo.task);
         ID++;
 
-        if (arraySize == 0) {
-            arraySize = 1;
-            todos = new Todo[arraySize];
-        }
-        else {
-            arraySize++;
-            Todo* newTodos = new Todo[arraySize];
-            for (int i = 0; i < arraySize - 1; i++) {
-                newTodos[i] = todos[i];
-            }
-            delete[] todos;
-            todos = newTodos;
-        }
-
-        todos[arraySize - 1] = { ID, todo.task };
+        todo.id = ID;
+        todos.push_back(todo);
 
         ofstream write;
         write.open("todo.txt", ios::app);
-        write << "\n" << ID << "\n" << todo.task;
+        write << todo.id << "\n" << todo.task << "\n";
         write.close();
 
         write.open("id.txt");
@@ -60,51 +44,55 @@ public:
         cout << "\n\tDo you want to add more tasks? y/n: ";
         cin >> ch;
 
-        if (ch == 'y') {
+        if (ch == 'y' || ch == 'Y') {
             perform();
         }
         else {
-            cout << "\n\tTask has been added successfully";
+            cout << "\n\tTask has been added successfully" << endl;
         }
     }
 
 private:
     int& ID;
-    Todo*& todos;
-    int& arraySize;
+    vector<Todo>& todos;
 };
 
 class DisplayTask : public Task {
 public:
-    DisplayTask(const Todo* todos, int size) : todos(todos), arraySize(size) {}
+    DisplayTask(const vector<Todo>& todos) : todos(todos) {}
 
     void perform() override {
         system("cls");
-        cout << "\t*******************************************************************" << endl;
-        cout << "\t*                      To Do List Application                     *" << endl;
-        cout << "\t*******************************************************************" << endl << endl << endl << endl;
-
         cout << "\n\t------------------Your current Tasks in the list--------------------" << endl;
 
-        for (int i = 0; i < arraySize; i++) {
-            print(todos[i]);
+        if (todos.empty()) {
+            cout << "\n\tNo tasks to display." << endl;
+        }
+        else {
+            // Print the table headers
+            cout << "----------------------------------------" << endl;
+            cout << "  ID  |     Task     " << endl;
+            cout << "----------------------------------------" << endl;
+
+            for (const Todo& task : todos) {
+                printTaskInTable(task);
+            }
+
+            cout << "----------------------------------------" << endl;
         }
     }
 
 private:
-    const Todo* todos;
-    int arraySize;
+    const vector<Todo>& todos;
 
-    static void print(const Todo& s) {
-        cout << "\n\tID is : " << s.id;
-        cout << "\n\tTask is : " << s.task;
+    void printTaskInTable(const Todo& s) {
+        cout << "  " << s.id << "   |   " << s.task << endl;
     }
 };
 
 int main() {
-    Todo* todos = nullptr;
+    vector<Todo> todos;
     int ID = 0;
-    int arraySize = 0;
 
     ifstream read;
     read.open("id.txt");
@@ -115,34 +103,49 @@ int main() {
 
     Task* tasks[2]; // A fixed-size array to store tasks
 
+    tasks[0] = new AddTask(ID, todos);
+    tasks[1] = new DisplayTask(todos);
+
     while (true) {
-        cout << endl;
-        cout << "\n\t1.Add Task";
-        cout << "\n\t2.Display Task";
+        cout << "\n\t 1. Add Task";
+        cout << "\n\t 2. Show Task";
+        cout << "\n\t 3. Search Task";
+        cout << "\n\t 4. Delete Task";
+        cout << "\n\t 5. Update Task";
+        cout << "\n\t 6. Exit";
 
         int choice;
-        cout << "\n\n\tEnter choice : ";
+        cout << "\n\t Enter Choice: ";
         cin >> choice;
 
         switch (choice) {
-        case 1:
-            tasks[0] = new AddTask(ID, todos, arraySize);
-            tasks[0]->perform();
-            break;
-        case 2:
-            tasks[1] = new DisplayTask(todos, arraySize);
-            tasks[1]->perform();
-            break;
+            case 1:
+                tasks[0]->perform(); // Add Task
+                break;
+            case 2:
+                tasks[1]->perform(); // Show Task
+                break;
+            case 3:
+                // Implement searchTask() logic
+                break;
+            case 4:
+                // Implement deleteTask() logic
+                break;
+            case 5:
+                // Implement updateTask() logic
+                break;
+            case 6:
+                // Exit the program
+                return 0;
+            default:
+                cout << "Invalid Option." << endl;
+                break;
         }
     }
 
-    // Deallocate memory for tasks
-    for (int i = 0; i < 2; i++) {
-        delete tasks[i];
-    }
-
-    // Deallocate memory for todos
-    delete[] todos;
+    // Clean up memory for dynamically allocated tasks
+    delete tasks[0];
+    delete tasks[1];
 
     return 0;
 }
