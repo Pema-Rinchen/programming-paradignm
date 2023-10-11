@@ -5,6 +5,7 @@
 using namespace std; 
 
 // Put all the functions and the Structure inside a Class
+//parent class
 
 struct todolist
 {
