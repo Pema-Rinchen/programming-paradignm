@@ -4,7 +4,7 @@
 #include <vector>
 
 using namespace std;
-
+// base class and virtual function
 class Task {
 public:
     virtual void perform() = 0;
@@ -15,7 +15,7 @@ struct Todo {
     int id;
     string task;
 };
-
+// inherited class of the class task
 class AddTask : public Task {
 public:
     AddTask(int& id, vector<Todo>& todos) : ID(id), todos(todos) {}
@@ -56,7 +56,7 @@ private:
     int& ID;
     vector<Todo>& todos;
 };
-
+// inherited class of the class task
 class DisplayTask : public Task {
 public:
     DisplayTask(const vector<Todo>& todos) : todos(todos) {}
