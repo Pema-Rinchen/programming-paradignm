@@ -1,158 +1,148 @@
 #include <iostream>
+#include <fstream>
 #include <string>
+
+using namespace std;
 
 class Task {
 public:
-    Task(int id, const std::string& task) : id(id), task(task), next(nullptr) {}
-
-    int getID() const {
-        return id;
-    }
-
-    void display() const {
-        std::cout << id << "\t\t" << task << std::endl;
-    }
-
-    Task* getNext() const {
-        return next;
-    }
-
-    void setNext(Task* task) {
-        next = task;
-    }
-
-private:
-    int id;
-    std::string task;
-    Task* next;
+    virtual void perform() = 0;
+    virtual ~Task() {}
 };
 
-class ToDoList {
+struct Todo {
+    int id;
+    string task;
+};
+
+class AddTask : public Task {
 public:
-    ToDoList() : first(nullptr) {}
+    AddTask(int& id, Todo*& todos, int& size) : ID(id), todos(todos), arraySize(size) {}
 
-    void addTask(const std::string& taskStr) {
-        int nextID = getNextID();
-        Task* newTask = new Task(nextID, taskStr);
-        if (!first) {
-            first = newTask;
-        } else {
-            Task* current = first;
-            while (current->getNext()) {
-                current = current->getNext();
+    void perform() override {
+        system("cls");
+        cout << "\t*******************************************************************" << endl;
+        cout << "\t*                      To Do List Application                     *" << endl;
+        cout << "\t*******************************************************************" << endl << endl << endl << endl;
+
+        Todo todo;
+        cout << "\n\tEnter new task: ";
+        cin.get();
+        getline(cin, todo.task);
+        ID++;
+
+        if (arraySize == 0) {
+            arraySize = 1;
+            todos = new Todo[arraySize];
+        }
+        else {
+            arraySize++;
+            Todo* newTodos = new Todo[arraySize];
+            for (int i = 0; i < arraySize - 1; i++) {
+                newTodos[i] = todos[i];
             }
-            current->setNext(newTask);
-        }
-        std::cout << "Task added successfully!" << std::endl;
-    }
-
-    void showTasks() const {
-        if (!first) {
-            std::cout << "No tasks to display." << std::endl;
-            return;
+            delete[] todos;
+            todos = newTodos;
         }
 
-        // Print table header
-        std::cout << "-----------------------------------------" << std::endl;
-        std::cout << "ID\t\tTask" << std::endl;
-        std::cout << "-----------------------------------------" << std::endl;
+        todos[arraySize - 1] = { ID, todo.task };
 
-        // Iterate through tasks and display them in a table format
-        Task* current = first;
-        while (current) {
-            current->display();
-            current = current->getNext();
+        ofstream write;
+        write.open("todo.txt", ios::app);
+        write << "\n" << ID << "\n" << todo.task;
+        write.close();
+
+        write.open("id.txt");
+        write << ID;
+        write.close();
+
+        char ch;
+        cout << "\n\tDo you want to add more tasks? y/n: ";
+        cin >> ch;
+
+        if (ch == 'y') {
+            perform();
         }
-
-        std::cout << "-----------------------------------------" << std::endl;
-    }
-
-    void deleteTask(int id) {
-        if (!first) {
-            std::cout << "Task not found." << std::endl;
-            return;
-        }
-
-        if (first->getID() == id) {
-            Task* temp = first;
-            first = first->getNext();
-            delete temp;
-            std::cout << "Task deleted successfully!" << std::endl;
-            return;
-        }
-
-        Task* current = first;
-        while (current->getNext()) {
-            if (current->getNext()->getID() == id) {
-                Task* temp = current->getNext();
-                current->setNext(current->getNext()->getNext());
-                delete temp;
-                std::cout << "Task deleted successfully!" << std::endl;
-                return;
-            }
-            current = current->getNext();
-        }
-        std::cout << "Task not found." << std::endl;
-    }
-
-    ~ToDoList() {
-        while (first) {
-            Task* temp = first;
-            first = first->getNext();
-            delete temp;
+        else {
+            cout << "\n\tTask has been added successfully";
         }
     }
 
 private:
-    Task* first;
+    int& ID;
+    Todo*& todos;
+    int& arraySize;
+};
 
-    int getNextID() const {
-        int nextID = 1;
-        Task* current = first;
-        while (current) {
-            if (current->getID() >= nextID) {
-                nextID = current->getID() + 1;
-            }
-            current = current->getNext();
+class DisplayTask : public Task {
+public:
+    DisplayTask(const Todo* todos, int size) : todos(todos), arraySize(size) {}
+
+    void perform() override {
+        system("cls");
+        cout << "\t*******************************************************************" << endl;
+        cout << "\t*                      To Do List Application                     *" << endl;
+        cout << "\t*******************************************************************" << endl << endl << endl << endl;
+
+        cout << "\n\t------------------Your current Tasks in the list--------------------" << endl;
+
+        for (int i = 0; i < arraySize; i++) {
+            print(todos[i]);
         }
-        return nextID;
+    }
+
+private:
+    const Todo* todos;
+    int arraySize;
+
+    static void print(const Todo& s) {
+        cout << "\n\tID is : " << s.id;
+        cout << "\n\tTask is : " << s.task;
     }
 };
 
 int main() {
-    ToDoList todoList;
+    Todo* todos = nullptr;
+    int ID = 0;
+    int arraySize = 0;
+
+    ifstream read;
+    read.open("id.txt");
+    if (!read.fail()) {
+        read >> ID;
+    }
+    read.close();
+
+    Task* tasks[2]; // A fixed-size array to store tasks
 
     while (true) {
-        std::cout << "1. Add Task\n2. Show Tasks\n3. Delete Task\n4. Exit\n";
+        cout << endl;
+        cout << "\n\t1.Add Task";
+        cout << "\n\t2.Display Task";
+
         int choice;
-        std::cin >> choice;
+        cout << "\n\n\tEnter choice : ";
+        cin >> choice;
 
         switch (choice) {
-            case 1: {
-                std::cin.ignore();
-                std::string taskStr;
-                std::cout << "Enter a New Task: ";
-                std::getline(std::cin, taskStr);
-                todoList.addTask(taskStr);
-                break;
-            }
-            case 2:
-                std::cout << "Tasks:\n";
-                todoList.showTasks();
-                break;
-            case 3: {
-                std::cout << "Enter the ID of the task to delete: ";
-                int id;
-                std::cin >> id;
-                todoList.deleteTask(id);
-                break;
-            }
-            case 4:
-                return 0;
-            default:
-                std::cout << "Invalid option. Please try again." << std::endl;
+        case 1:
+            tasks[0] = new AddTask(ID, todos, arraySize);
+            tasks[0]->perform();
+            break;
+        case 2:
+            tasks[1] = new DisplayTask(todos, arraySize);
+            tasks[1]->perform();
+            break;
         }
     }
+
+    // Deallocate memory for tasks
+    for (int i = 0; i < 2; i++) {
+        delete tasks[i];
+    }
+
+    // Deallocate memory for todos
+    delete[] todos;
 
     return 0;
 }
