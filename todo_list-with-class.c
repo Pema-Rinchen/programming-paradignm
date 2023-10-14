@@ -4,7 +4,7 @@
 #include <vector>
 
 using namespace std;
-// base class and virtual function
+
 class Task {
 public:
     virtual void perform() = 0;
@@ -15,13 +15,19 @@ struct Todo {
     int id;
     string task;
 };
-// inherited class of the class task
+int ID = 0;
+
+void banner() {
+  // include banner
+}
+
 class AddTask : public Task {
 public:
     AddTask(int& id, vector<Todo>& todos) : ID(id), todos(todos) {}
 
     void perform() override {
         system("cls");
+        banner();
         Todo todo;
         cout << "\n\tEnter new task: ";
         cin.ignore();
@@ -63,6 +69,7 @@ public:
 
     void perform() override {
         system("cls");
+        banner();
         cout << "\n\t------------------Your current Tasks in the list--------------------" << endl;
 
         if (todos.empty()) {
@@ -90,6 +97,102 @@ private:
     }
 };
 
+class SearchTask : public Task {
+public:
+    SearchTask(const vector<Todo>& todos) : todos(todos) {}
+
+    void perform() override {
+        system("cls");
+        banner();
+        cout << "\n\t------------------Search Task--------------------" << endl;
+        int id;
+        cout << "Enter Task ID: ";
+        cin >> id;
+
+        for (const Todo& task : todos) {
+            if (task.id == id) {
+                system("cls");
+                cout << "Task Found:" << endl;
+                cout << "  ID  |     Task     " << endl;
+                cout << "----------------------------------------" << endl;
+                printTaskInTable(task);
+                return;
+            }
+        }
+
+        system("cls");
+        cout << "Task Not Found" << endl;
+    }
+
+private:
+    const vector<Todo>& todos;
+
+    void printTaskInTable(const Todo& s) {
+        cout << "  " << s.id << "   |   " << s.task << endl;
+    }
+};
+
+class DeleteTask : public Task {
+public:
+    DeleteTask(vector<Todo>& todos) : todos(todos) {}
+
+    void perform() override {
+        system("cls");
+        banner();
+        cout << "\n\t------------------Delete Task--------------------" << endl;
+        int id;
+        cout << "Enter Task ID to delete: ";
+        cin >> id;
+
+        for (auto it = todos.begin(); it != todos.end(); ++it) {
+            if (it->id == id) {
+                todos.erase(it);
+                system("cls");
+                cout << "Task Deleted Successfully!" << endl;
+                return;
+            }
+        }
+
+        system("cls");
+        cout << "Task Not Found" << endl;
+    }
+
+private:
+    vector<Todo>& todos;
+};
+
+class UpdateTask : public Task {
+public:
+    UpdateTask(vector<Todo>& todos) : todos(todos) {}
+
+    void perform() override {
+        system("cls");
+        banner();
+        cout << "\n\t------------------Update Task--------------------" << endl;
+        int id;
+        cout << "Enter Task ID to update: ";
+        cin >> id;
+
+        for (Todo& task : todos) {
+            if (task.id == id) {
+                system("cls");
+                cout << "Current Task: " << task.task << endl;
+                cout << "Enter the Updated Task: ";
+                cin.ignore();
+                getline(cin, task.task);
+                system("cls");
+                cout << "Task Updated Successfully!" << endl;
+                return;
+            }
+        }
+
+        system("cls");
+        cout << "Task Not Found" << endl;
+    }
+
+private:
+    vector<Todo>& todos;
+};
 int main() {
     vector<Todo> todos;
     int ID = 0;
@@ -101,12 +204,16 @@ int main() {
     }
     read.close();
 
-    Task* tasks[2]; // A fixed-size array to store tasks
+    Task* tasks[5]; // A fixed-size array to store tasks
 
     tasks[0] = new AddTask(ID, todos);
     tasks[1] = new DisplayTask(todos);
+    tasks[2] = new SearchTask(todos);
+    tasks[3] = new DeleteTask(todos);
+    tasks[4] = new UpdateTask(todos);
 
     while (true) {
+        banner();
         cout << "\n\t 1. Add Task";
         cout << "\n\t 2. Show Task";
         cout << "\n\t 3. Search Task";
@@ -126,26 +233,32 @@ int main() {
                 tasks[1]->perform(); // Show Task
                 break;
             case 3:
-                // Implement searchTask() logic
+                tasks[2]->perform(); // Search Task
                 break;
             case 4:
-                // Implement deleteTask() logic
+                tasks[3]->perform(); // Delete Task
                 break;
             case 5:
-                // Implement updateTask() logic
+                tasks[4]->perform(); // Update Task
                 break;
             case 6:
                 // Exit the program
-                return 0;
+                break;
             default:
                 cout << "Invalid Option." << endl;
                 break;
         }
+
+        if (choice == 6) {
+            // Exit the loop
+            break;
+        }
     }
 
     // Clean up memory for dynamically allocated tasks
-    delete tasks[0];
-    delete tasks[1];
+    for (int i = 0; i < 5; ++i) {
+        delete tasks[i];
+    }
 
     return 0;
 }
