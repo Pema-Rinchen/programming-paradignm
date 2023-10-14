@@ -18,7 +18,9 @@ struct Todo {
 int ID = 0;
 
 void banner() {
-  // include banner
+    cout << "\n\t------------------" << endl;
+    cout <<"\t ✨ TO-DO LIST ✨ " << endl;
+    cout << "\t------------------" << endl;
 }
 
 class AddTask : public Task {
@@ -27,9 +29,8 @@ public:
 
     void perform() override {
         system("cls");
-        banner();
         Todo todo;
-        cout << "\n\tEnter new task: ";
+        cout << "\n\tEnter New task: ";
         cin.ignore();
         getline(cin, todo.task);
         ID++;
@@ -42,7 +43,7 @@ public:
         write << todo.id << "\n" << todo.task << "\n";
         write.close();
 
-        write.open("id.txt");
+        write.open("todo.txt");
         write << ID;
         write.close();
 
@@ -69,8 +70,7 @@ public:
 
     void perform() override {
         system("cls");
-        banner();
-        cout << "\n\t------------------Your current Tasks in the list--------------------" << endl;
+        cout << "\n\t------------------Your current Tasks--------------------" << endl;
 
         if (todos.empty()) {
             cout << "\n\tNo tasks to display." << endl;
@@ -103,7 +103,6 @@ public:
 
     void perform() override {
         system("cls");
-        banner();
         cout << "\n\t------------------Search Task--------------------" << endl;
         int id;
         cout << "Enter Task ID: ";
@@ -138,7 +137,6 @@ public:
 
     void perform() override {
         system("cls");
-        banner();
         cout << "\n\t------------------Delete Task--------------------" << endl;
         int id;
         cout << "Enter Task ID to delete: ";
@@ -167,7 +165,6 @@ public:
 
     void perform() override {
         system("cls");
-        banner();
         cout << "\n\t------------------Update Task--------------------" << endl;
         int id;
         cout << "Enter Task ID to update: ";
@@ -255,7 +252,7 @@ int main() {
         }
     }
 
-    // Clean up memory for dynamically allocated tasks
+    // Clean up memory for dynamically allocated tasks and refresh the todo.txt
     for (int i = 0; i < 5; ++i) {
         delete tasks[i];
     }
