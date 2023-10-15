@@ -19,7 +19,7 @@ int ID = 0;
 
 void banner() {
     cout << "\n\t------------------" << endl;
-    cout <<"\t ✨ TO-DO LIST ✨ " << endl;
+    cout <<"\t * TO-DO LIST * " << endl;
     cout << "\t------------------" << endl;
 }
 
